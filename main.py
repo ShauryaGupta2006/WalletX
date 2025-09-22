@@ -1,35 +1,55 @@
-
-
-
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog 
 import mysql.connector as sqlx
+from db_init import start_mysql_if_stopped
 from datetime import date
 from datetime import datetime
 import pandas as pd
 
+#command to update changes in dmg:
+
+    #hdiutil create -volname "WalletX" -srcfolder /Applications/WalletX.app -ov -format UDZO WalletX.dmg
+
+#dmg file icon:
+
+# hdiutil create -volname "WalletX" -srcfolder /Users/Shaurya/Desktop/Code/Home_directory/projects/WalletX/wallet_1543590.icns -ov -format UDZO WalletX.dmg
+
+
+
+start_mysql_if_stopped()
 mydb = sqlx.connect(host = "localhost",user = "root",password = "passcode",database = "WalletX")
 
 
 mycursor = mydb.cursor()
+# starter = "sudo /usr/local/mysql/support-files/mysql.server start"
+# mycursor.execute(starter)
 
-# print(wall_balance)
+# print(Saving_Balance)
 t = date.today()
 
-def check_balance():
-    print("Your Current Balance is :",wall_balance)
+def check_save_balance():
+    print("Your Current Balance is :",Saving_Balance)
+    print("                     ")
+
+
+def check_current_balance():
+    print("Your Current Balance is :",current_Balance)
     print("                     ")
 
 
 while(True):
 
 
-    result = mycursor.execute("SELECT wall_balance FROM WalletX.main WHERE wall_balance IS NOT NULL ORDER BY tnx_id DESC LIMIT 1;")
-    # result = mycursor.execute("SELECT wall_balance FROM WalletX.main WHERE tnx_id IS NOT NULL ORDER BY tnx_id DESC LIMIT 1;")
-    # mycursor.execute("Select wall_balance FROM main ORDER BY tnx_id DESC Limit 1;")
+    result = mycursor.execute("SELECT Saving_Balance FROM WalletX.main WHERE Saving_Balance IS NOT NULL ORDER BY tnx_id DESC LIMIT 1;")
+    # result = mycursor.execute("SELECT Saving_Balance FROM WalletX.main WHERE tnx_id IS NOT NULL ORDER BY tnx_id DESC LIMIT 1;")
+    # mycursor.execute("Select Saving_Balance FROM main ORDER BY tnx_id DESC Limit 1;")
+    Saving_Balance001 = mycursor.fetchone()
+    Saving_Balance = int(Saving_Balance001[0])
 
-    wall_balance001 = mycursor.fetchone()
-    wall_balance = int(wall_balance001[0])
+
+    result2 = mycursor.execute("SELECT Current_Balance FROM WalletX.main WHERE Current_Balance IS NOT NULL ORDER BY tnx_id DESC LIMIT 1;")
+    current_Balance001 = mycursor.fetchone()
+    current_Balance = int(current_Balance001[0])
 
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("1 Insert Amount                      ",end="")
@@ -52,55 +72,107 @@ while(True):
 
     match u1:
         case 1:
-            print("Increasing your Wallet Balance: ")
+            print(current_Balance)
+            print("Adding your Wallet Balance: ")
+            print("Current Balance:",current_Balance)
+            print("1.Saving Wallet 2.Daily Wallet ")
+            a3 = int(input("Choose the Wallet:  "))
             a1 = int(input("Enter the amount to be added: "))
             a2 = input("Got Money from and for ")
-            new_wall_balance = wall_balance+a1
 
-            query = """
-                INSERT INTO main(wall_balance, Amount, Category, what_for, tran_date, tnx_time) 
-                VALUES (%s, %s,"Deposite", %s, %s, %s)
-                """
-            values = (new_wall_balance, a1, a2, t, time_now)
+            match a3:
+                case 1:
+                    print("Updating Saving Wallet")
 
-            mycursor.execute(query, values)
-            print("Amount updated")
-            wall_balance = new_wall_balance
-            check_balance()
-            mydb.commit()
+                    new_Saving_Balance = Saving_Balance+a1
 
+                    query = """
+                        INSERT INTO main(Saving_Balance,Current_Balance, Amount, Category, what_for, tnx_date, tnx_time) 
+                        VALUES (%s,%s ,%s,"Deposite", %s, %s, %s)
+                        """
+                    values = (new_Saving_Balance,current_Balance, a1, a2, t, time_now)
+
+                    mycursor.execute(query, values)
+                    print("Amount updated")
+                    Saving_Balance = new_Saving_Balance
+                    check_save_balance()
+                    mydb.commit()
+                case 2:
+                    print("Updating Daily Wallet")
+
+                    new_current_Balance = current_Balance+a1
+
+                    query = """
+                        INSERT INTO main(Saving_Balance,Current_Balance, Amount, Category, what_for, tnx_date, tnx_time) 
+                        VALUES (%s,%s ,%s,"Deposite", %s, %s, %s)
+                        """
+                    values = (Saving_Balance,new_current_Balance, a1, a2, t, time_now)
+
+                    mycursor.execute(query, values)
+                    print("Amount updated")
+                    current_Balance = new_current_Balance
+                    check_current_balance()
+                    mydb.commit()
+#Widhrawal 
 
         case 2:
             print("Widhrawal in process: ")
             a1 = int(input("widhraw Amount: "))
             a2 = input("Reason for Widhrawal: ")
-            u2 = int(input('''1->Reimbursement
-                           2-> Loses ''' ))
-            
-            if u2 == 1:
-                new_wall_balance = wall_balance - a1
-                query = """INSERT INTO main(wall_balance,Amount,Category,what_for,tran_date,tnx_time,Reimbursement_amount,Loses) Values(%s, %s, %s, %s, %s, %s, %s, %s) """
-                values = (new_wall_balance,a1,"Widrawal",a2,t,time_now,a1,0)
-                mycursor.execute(query,values)
-                
+            print("1-> Reimbursement")
+            u2 = int(input("2-> Loses \n"))
+            print("1.Saving Wallet 2.Daily Wallet ")
+            a3 = int(input("Choose the Wallet:  "))
 
-            elif u2 == 2:
-                new_wall_balance = wall_balance - a1
-                query = """INSERT INTO main(wall_balance,Amount,Category,what_for,tran_date,tnx_time,Loses,Reimbursement_amount) Values(%s, %s, %s, %s, %s, %s, %s, %s) """
-                values = (new_wall_balance,a1,"Widrawal",a2,t,time_now,a1,0)
-                mycursor.execute(query,values)
-            else:
-                print("Entered Something Wrong:")  
-            
-                
-            wall_balance = new_wall_balance
-            print("Widhrawal Success")
-            check_balance()
-            mydb.commit()
+            match a3:
+
+# This is my Saving Wallet
+                case 1:
+                    if u2 == 1:
+                        new_Saving_Balance = Saving_Balance - a1
+                        query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Reimbursement_amount,Loses) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
+                        values = (new_Saving_Balance,current_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
+                        mycursor.execute(query,values)
+
+
+                    elif u2 == 2:
+                        new_Saving_Balance = Saving_Balance - a1
+                        query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Loses,Reimbursement_amount) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
+                        values = (new_Saving_Balance,current_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
+                        mycursor.execute(query,values)
+                    else:
+                        print("Entered Something Wrong:")
+                    Saving_Balance = new_Saving_Balance
+                    print("Widhrawal Success")
+                    check_save_balance()
+                    mydb.commit()
+
+# This is my daily wallet
+                case 2:
+                    #reimbursment 
+                    if u2 == 1:
+                        new_current_Balance = current_Balance - a1
+                        query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Reimbursement_amount,Loses) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
+                        values = (Saving_Balance,new_current_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
+                        mycursor.execute(query,values)
+
+#Losses
+                    elif u2 == 2:
+                        new_current_Balance = current_Balance - a1
+                        query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Loses,Reimbursement_amount) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
+                        values = (Saving_Balance,new_current_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
+                        mycursor.execute(query,values)
+                    else:
+                        print("Entered Something Wrong:")
+
+                    current_Balance = new_current_Balance
+                    print("Widhrawal Success")
+                    check_current_balance()
+                    mydb.commit()
 
 
         case 3:
-            check_balance()
+            check_save_balance()
             
         
         case 4:
@@ -135,4 +207,3 @@ while(True):
         case _:
             print("Oops something went wrong Please check and try back again: ")
             pass
-
