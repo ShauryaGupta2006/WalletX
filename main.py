@@ -36,6 +36,9 @@ def check_current_balance():
     print("Your Current Balance is :",current_Balance)
     print("                     ")
 
+def check_Spending_Balance():
+    print("Your Current Balance is :",Spending_Balance)
+    print("                     ")
 
 while(True):
 
@@ -45,6 +48,11 @@ while(True):
     # mycursor.execute("Select Saving_Balance FROM main ORDER BY tnx_id DESC Limit 1;")
     Saving_Balance001 = mycursor.fetchone()
     Saving_Balance = int(Saving_Balance001[0])
+
+
+
+    Spending_Balance001 = mycursor.fetchone()
+    Spending_Balance = int(Spending_Balance001[0])
 
 
     result2 = mycursor.execute("SELECT Current_Balance FROM WalletX.main WHERE Current_Balance IS NOT NULL ORDER BY tnx_id DESC LIMIT 1;")
@@ -61,28 +69,29 @@ while(True):
     print("5 Check Loses.                       ",end="")
     print("6 to show Wallet Sheet",)
     print("")
+    print("7 for Spending amount")
 
-    print("7 to Exit ")
+    print("8 to Exit ")
     u1 = int(input("Choice: "))
 
     time_now = datetime.now().strftime("%H:%M:%S")
     print(time_now)
     # // what for mai kisko or kis liye 
     #updated balance
-
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Adding up new value ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
     match u1:
         case 1:
             print(current_Balance)
             print("Adding your Wallet Balance: ")
-            print("Current Balance:",current_Balance)
-            print("1.Saving Wallet 2.Daily Wallet ")
+            print("Saving Balance: ", Saving_Balance,"Current Balance:",current_Balance,"Spending balance: ",Spending_Balance)
+            print("1.Saving Wallet 2.Daily Wallet 3. Spending Balance ")
             a3 = int(input("Choose the Wallet:  "))
             a1 = int(input("Enter the amount to be added: "))
             a2 = input("Got Money from and for ")
 
             match a3:
                 case 1:
-                    print("Updating Saving Wallet")
+                    print("New Amount for Saving Wallet")
 
                     new_Saving_Balance = Saving_Balance+a1
 
@@ -98,7 +107,7 @@ while(True):
                     check_save_balance()
                     mydb.commit()
                 case 2:
-                    print("Updating Daily Wallet")
+                    print("UNew Amount for Daily Wallet")
 
                     new_current_Balance = current_Balance+a1
 
@@ -113,20 +122,43 @@ while(True):
                     current_Balance = new_current_Balance
                     check_current_balance()
                     mydb.commit()
-#Widhrawal 
+                case 3:
+                    print("New Amount for Spending Wallet")
+                    New_Spending_Balance = Spending_Balance+a1
+                    query = """
+                        INSERT INTO main(Saving_Balance,Current_Balance, Amount,Spending_Balance, Category, what_for, tnx_date, tnx_time) 
+                        VALUES (%s,%s ,%s,%s,"Deposite", %s, %s, %s)
+                        """
+                    values = (Saving_Balance,new_current_Balance,New_Spending_Balance, a1, a2, t, time_now)
+
+                    mycursor.execute(query, values)
+                    print("Amount updated")
+                    Spending_Balance = New_Spending_Balance
+                    check_Spending_Balance()
+                    mydb.commit()
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Widhrawing value ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
         case 2:
             print("Widhrawal in process: ")
             a1 = int(input("widhraw Amount: "))
             a2 = input("Reason for Widhrawal: ")
+            print("1.Saving Wallet 2.Daily Wallet 3. Spending Wallet ")
+            a3 = int(input("Choose the Wallet:  "))
+
+            if a3 == 3:
+                pass
+            elif a3 == 1 || a3 == 2:
+                pass
+            else:
+                continue()
             print("1-> Reimbursement")
             u2 = int(input("2-> Loses \n"))
-            print("1.Saving Wallet 2.Daily Wallet ")
-            a3 = int(input("Choose the Wallet:  "))
+            
 
             match a3:
 
-# This is my Saving Wallet
+            # This is my Saving Wallet
                 case 1:
                     if u2 == 1:
                         new_Saving_Balance = Saving_Balance - a1
@@ -147,7 +179,7 @@ while(True):
                     check_save_balance()
                     mydb.commit()
 
-# This is my daily wallet
+            #Daily wallet
                 case 2:
                     #reimbursment 
                     if u2 == 1:
@@ -156,7 +188,7 @@ while(True):
                         values = (Saving_Balance,new_current_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
                         mycursor.execute(query,values)
 
-#Losses
+        #Losses
                     elif u2 == 2:
                         new_current_Balance = current_Balance - a1
                         query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Loses,Reimbursement_amount) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
@@ -169,7 +201,11 @@ while(True):
                     print("Widhrawal Success")
                     check_current_balance()
                     mydb.commit()
+        #Spending Wallet
+                case 3:
+                    print("Widhrawing from Spending Wallet")
 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Amount checkerr  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
         case 3:
             check_save_balance()
@@ -190,6 +226,7 @@ while(True):
 
             print(loses[0])
         
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Showing up the whole sheet ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
         case 6:
             print("Loading Wallet sheet:")
@@ -200,7 +237,14 @@ while(True):
             df = pd.DataFrame(rows,columns=columns_name)
             df.to_excel("WalletX.xlsx")
             print(df)
+        
+#Spending Branch
         case 7:
+            print("Opeing a Spending Branch ")
+            u1 = int(input("Enter "))
+            
+#Exit portion
+        case 8:
             print("Quiting this program BYE!!!")
             exit()
 
