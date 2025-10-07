@@ -106,8 +106,10 @@ while(True):
                     Saving_Balance = new_Saving_Balance
                     check_save_balance()
                     mydb.commit()
+
+
                 case 2:
-                    print("UNew Amount for Daily Wallet")
+                    print("New Amount for Daily Wallet")
 
                     new_current_Balance = current_Balance+a1
 
@@ -149,6 +151,7 @@ while(True):
             if a3 == 3:
                 pass
             elif a3 == 1 || a3 == 2:
+
                 pass
             else:
                 continue()
@@ -181,14 +184,15 @@ while(True):
 
             #Daily wallet
                 case 2:
-                    #reimbursment 
+                
+                #reimbursment 
                     if u2 == 1:
                         new_current_Balance = current_Balance - a1
                         query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Reimbursement_amount,Loses) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
                         values = (Saving_Balance,new_current_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
                         mycursor.execute(query,values)
 
-        #Losses
+                #Losses
                     elif u2 == 2:
                         new_current_Balance = current_Balance - a1
                         query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Category,what_for,tnx_date,tnx_time,Loses,Reimbursement_amount) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
@@ -201,9 +205,15 @@ while(True):
                     print("Widhrawal Success")
                     check_current_balance()
                     mydb.commit()
+
+                    
         #Spending Wallet
                 case 3:
                     print("Widhrawing from Spending Wallet")
+                    new_Spending_Balance = Spending_Balance- a1
+                    query = """INSERT INTO main(Saving_Balance,Current_Balance,Amount,Spending_Balance,Category,what_for,tnx_date,tnx_time,Loses,Reimbursement_amount) Values(%s,%s, %s, %s, %s, %s, %s, %s, %s) """
+                    values = (Saving_Balance,current_Balance,new_Spending_Balance,a1,"Widrawal",a2,t,time_now,a1,0)
+                    mycursor.execute(query,values)
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Amount checkerr  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
